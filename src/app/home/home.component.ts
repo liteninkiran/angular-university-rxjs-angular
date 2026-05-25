@@ -1,9 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { Course, sortCoursesBySeqNo } from '../model/course';
-import { HttpClient } from '@angular/common/http';
+import { Course, CourseCategory, sortCoursesBySeqNo } from '../model/course';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { CourseDialogComponent } from '../course-dialog/course-dialog.component';
 import { CoursesService } from '../services/courses.service';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+const sortCourses = (courses: Course[]) => courses.sort(sortCoursesBySeqNo);
 
 @Component({
   selector: 'home',
@@ -12,31 +15,22 @@ import { CoursesService } from '../services/courses.service';
   standalone: false,
 })
 export class HomeComponent implements OnInit {
-  beginnerCourses: Course[] = [];
-  advancedCourses: Course[] = [];
+  beginnerCourses$!: Observable<Course[]>;
+  advancedCourses$!: Observable<Course[]>;
+  courses$!: Observable<Course[]>;
 
   constructor(
-    private http: HttpClient,
     private dialog: MatDialog,
     private coursesService: CoursesService,
   ) {}
 
   ngOnInit() {
-    this.coursesService.loadAllCourses().subscribe();
-    // this.http.get('/api/courses').subscribe((res: any) => {
-    //   const courses: Course[] = res.payload.sort(sortCoursesBySeqNo);
-
-    //   this.beginnerCourses = courses.filter(
-    //     (course) => course.category === 'BEGINNER',
-    //   );
-
-    //   this.advancedCourses = courses.filter(
-    //     (course) => course.category === 'ADVANCED',
-    //   );
-    // });
+    this.loadAllCourses();
+    this.loadBeginnerCourses();
+    this.loadAdvancedCourses();
   }
 
-  editCourse(course: Course) {
+  public editCourse(course: Course) {
     const dialogConfig = new MatDialogConfig();
 
     dialogConfig.disableClose = true;
@@ -46,5 +40,25 @@ export class HomeComponent implements OnInit {
     dialogConfig.data = course;
 
     const dialogRef = this.dialog.open(CourseDialogComponent, dialogConfig);
+  }
+
+  private loadAllCourses() {
+    this.courses$ = this.coursesService.loadAllCourses().pipe(map(sortCourses));
+  }
+
+  private loadBeginnerCourses() {
+    this.beginnerCourses$ = this.getCourses('BEGINNER');
+  }
+
+  private loadAdvancedCourses() {
+    this.advancedCourses$ = this.getCourses('ADVANCED');
+  }
+
+  private getCourses(category: CourseCategory) {
+    return this.courses$.pipe(
+      map((courses) =>
+        courses.filter((course) => course.category === category),
+      ),
+    );
   }
 }
