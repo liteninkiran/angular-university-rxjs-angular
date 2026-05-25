@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { tap, map } from 'rxjs/operators';
+import { map, shareReplay } from 'rxjs/operators';
 import { Course } from '../model/course';
 import { HttpResponse } from '../model/response';
 
@@ -13,13 +13,10 @@ export class CoursesService {
   constructor(private http: HttpClient) {}
 
   loadAllCourses() {
-    return this.http.get<CourseResponse>('/api/courses').pipe(
-      tap((res) => {
-        console.log(res);
-      }),
-      map((res) => {
-        return res.payload;
-      }),
+    const courses$ = this.http.get<CourseResponse>('/api/courses');
+    return courses$.pipe(
+      map((res) => res.payload),
+      shareReplay(),
     );
   }
 }
