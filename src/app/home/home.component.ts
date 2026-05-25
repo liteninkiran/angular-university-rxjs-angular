@@ -24,11 +24,11 @@ export class HomeComponent implements OnInit {
       const courses: Course[] = res.payload.sort(sortCoursesBySeqNo);
 
       this.beginnerCourses = courses.filter(
-        (course) => course.category == 'BEGINNER',
+        (course) => course.category === 'BEGINNER',
       );
 
       this.advancedCourses = courses.filter(
-        (course) => course.category == 'ADVANCED',
+        (course) => course.category === 'ADVANCED',
       );
     });
   }

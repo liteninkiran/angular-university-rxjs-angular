@@ -7,7 +7,7 @@ export type Course = {
   price: number;
   uploadedImageUrl?: string;
   courseListIcon?: string;
-  category: string;
+  category: CourseCategory;
   url: string;
   lessonsCount?: number;
   promo?: boolean;
